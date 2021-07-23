@@ -71,7 +71,7 @@ Change the following settings from the default machine policy:
 
 ![auto scaling custom machine policy](images/auto-scaling-machine-policy.png)
 
-## Scaling Down Deployment Targets
+## Scaling In Deployment Targets
 
 To account for a variety of use cases, any project that will deploy to servers in auto scaling groups should be configured to:
 
@@ -81,13 +81,16 @@ To account for a variety of use cases, any project that will deploy to servers i
 
 ![auto scaling projects](images/project-settings-with-auto-scaling.png)
 
-## Scaling Down Workers
+By default, a deployment will fail when a deployment target is removed while running a step on it.  The recommendation is to configure [guided failure mode](docs/releases/guided-failures.md).  Any errors will pause the deployment and ask for user intervention.
 
-Unlike deployment targets, workers are generally used in a lot more deployments and runbook runs.  
+Guided failure mode can be configured at the environment level.
+![guided failure environment](images/environment-guided-failure-mode.png)
 
+Or, at the project level.
+![project guided failure mode](images/project-guided-failure-mode.png)
 
 ## Overprovisioning
 
-VMSS provides the ability to [overprovision when scaling out](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  When it is turned on the VMSS will create more VMs than what was asked for.  For example, you ask for 5 more VMs, and 7 are created.  Once 5 VMs are successfully running the remaining 2 are deleted automatically.  This is done to improve success rates.
+Azure Virtual Machine Scale Sets provides the ability to [overprovision when scaling out](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  When it is enabled the VMSS will create more VMs than what was asked for.  For example, you ask for 5 more VMs, and 7 are created.  Once 5 VMs are successfully running the remaining 2 are deleted automatically.  This is done to improve success rates.
 
-This scenario is no different than scaling down an VMSS or ASG.  In a nutshell, Octopus will have more targets registered than actually exist.  Following the same mitigation steps from above will solve this problem.
+This scenario is no different than scaling in an VMSS or ASG.  In a nutshell, Octopus will have more targets registered than actually exist.  The difference is in the timing.  Normal scale in events happen 30 minutes to several hours after a VM is created.  With overprovisioning, it occurs almost right away.  Following the same mitigation steps from above will solve this problem.
