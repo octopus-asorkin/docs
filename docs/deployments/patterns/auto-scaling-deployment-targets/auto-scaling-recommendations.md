@@ -49,7 +49,7 @@ Generally, listening tentacles are more efficent and are easier to configure whe
 
 In our testing, polling tentacles tended to have an easier time registering with an Octopus Instance than listening tentacles.  
 
-# Scaling Down
+# Scaling In
 
 Eventually you are going run into the following scenarios:
 
@@ -71,7 +71,7 @@ Change the following settings from the default machine policy:
 
 ![auto scaling custom machine policy](images/auto-scaling-machine-policy.png)
 
-## Scaling In Deployment Targets
+## Project Configuration
 
 To account for a variety of use cases, any project that will deploy to servers in auto scaling groups should be configured to:
 
@@ -88,9 +88,3 @@ Guided failure mode can be configured at the environment level.
 
 Or, at the project level.
 ![project guided failure mode](images/project-guided-failure-mode.png)
-
-## Overprovisioning
-
-Azure Virtual Machine Scale Sets provides the ability to [overprovision when scaling out](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  When it is enabled the VMSS will create more VMs than what was asked for.  For example, you ask for 5 more VMs, and 7 are created.  Once 5 VMs are successfully running the remaining 2 are deleted automatically.  This is done to improve success rates.
-
-This scenario is no different than scaling in an VMSS or ASG.  In a nutshell, Octopus will have more targets registered than actually exist.  The difference is in the timing.  Normal scale in events happen 30 minutes to several hours after a VM is created.  With overprovisioning, it occurs almost right away.  Following the same mitigation steps from above will solve this problem.
