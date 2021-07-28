@@ -5,7 +5,15 @@ position: 20
 hideInThisSection: true
 ---
 
-[Azure Virtual Machine Scale Sets](https://azure.microsoft.com/en-us/services/virtual-machine-scale-sets/) (VMSS) are an auto-scaling technology you can use with Octopus Deploy.  Unlike technologies such as [Azure Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/) or [Azure Kubernetes Service](https://azure.microsoft.com/en-us/services/kubernetes-service/#overview), each instance in a VMSS has to be registered with Octopus Deploy.  This guide will walk you through how to use VMSS with Octopus Deploy, some common pitfalls, as well as a [step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in the library to make it easier to manage scale out and scale in events.
+[Azure Virtual Machine Scale Sets](https://azure.microsoft.com/en-us/services/virtual-machine-scale-sets/) (VMSS) are an auto-scaling technology you can use with Octopus Deploy.  Unlike technologies such as [Azure Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/) or [Azure Kubernetes Service](https://azure.microsoft.com/en-us/services/kubernetes-service/#overview), each instance in a VMSS has to be registered with Octopus Deploy.  This guide will walk you through how to use VMSS with Octopus Deploy, some common pitfalls, as well as a new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in the library to make it easier to manage scale out and scale in events.
+
+# Terminology
+
+As you read this guide you will encounter the following terminology you should familiarize yourself with.
+
+- **Scale Out**: When a Virtual Machine Scale Set adds Virtual Machines.  This can be triggered via a defined rule or manually.
+- **Scale In**: When a Virtual Machine Scale Set removes Virtual Machines.  This can be triggered via a defined rule or manually.
+- **Overprovisioning**: When the Virtual Machine Scale set creates more Virtual Machines than asked for.  This is done to improve the speed and success rate when scaling out.  Overprovisioning is enabled by default.
 
 # Prep Work
 
@@ -46,16 +54,37 @@ Or, at the project level.
 
 # Scaling Out
 
-A scale out event is when new virtual machines are added to a Azure Virtual Machine Scale Sets.  A scale out event can be triggered either manually or automatically via a rule.  Octopus Deploy treats both a manual scale out and automatic scale out event the same.  This guide will walk through the necessary steps to configure a Octopus Deploy project to respond to a scale out event.
+Our recommendation is to use [deployment target triggers](/docs/projects/project-triggers/deployment-target-triggers.md).  They will fire anytime a new deployment target is found.  In our testing, we have found it is normal to see a trigger do a deployment back to back.  
 
-## Sample Application
+- The number of instances in a VMSS is increased from 1 to 10.
+- Octopus Deploy sees 4 of the 9 new VMs have come online and trigger a deployment.
+- After that deployment is finished, Octopus Deploy will see the remaining 5 VMs and trigger a new deployment.
 
+![Deployment target triggers with auto scaling groups](images/auto-scaling-with-deployment-target-triggers.png)
 
+If your deployments are quick (less than five minutes), that behavior might not be much of a concern.  However, some of our customers' deployment will also ensure all the necessary software (IIS, Java, .NET, NGINX, etc.) is installed and configured properly.  That above behavior can mean a scale out event that would take 10-30 minutes to finish will take 20-60 minutes.  
 
-## Project Structure
+This guide is designed to address that issue by using the new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status).
 
-In our discussions with customers, we rarely see a Virtual Machine Scale Set outside of **Production** or a **Production-Like** environment.  The testing environments, **Development**, **Test**, **QA**, etc. have a fixed number of virtual machines.    
+- When a scale out event occurs, Octopus Deploy will wait until all machines are provisioned then do the deployment.  In most cases Virtual Machines finish provisioning within 60-90 seconds of each other.
+- The deployment will only include new Deployment Targets.  Any pre-existing Deployment Targets will be left alone.
+- Virtual Machine Scale Sets support [overprovisioning](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  Any overprovisioned and removed machines should be removed and NOT be deployed to.
 
+## Separate Project for VMSS Interaction
+
+Due to the scattershot nature of how VMs are provisioned, we have found configuring a separate project for managing VMSS and Octopus Deploy interaction offers the best chance of success.  The separate project used to manage VMSS and Octopus interaction will have a lot of responsibility.  It will handle:
+
+- **Deployment Target Triggers**: The project will house all the deployment target triggers.
+- **Wait until all VMs are provisioned**: The new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will pause the deployment and wait until all new VMs have finished provisioning.
+- **Triggering a deployment for the new deployment targets**: Once the VMSS finishes provisioning, you can use the [Deploy Child Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to redeploy the latest release for the newly added machines.
+- **Handle VMSS Overprovisioning and reconciliation**: The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will automatically remove any over provisioned machines.
+- **Duplicate runs caused by how VMSS provisions VMs**: The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will detect a duplicate run caused by a trigger and give you the option to cancel it or use a output variable to skip the remaining steps.
+
+## Configuring the VMSS Orchestration Project
+
+1. On your Octopus instance click on **{{Project, Add Project}}**.
+2. Enter in a **Project Name** and click **Save**
+3. From the project overview screen go to **{{Deploy, Triggers}}**.
 
 
 # Design Considerations
@@ -105,10 +134,5 @@ Use the provided images plus the custom script extension to download, install, a
 
 ## Overprovisioning
 
-Azure Virtual Machine Scale Sets provide a feature called [overprovisioning](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  In a nutshell, if you scale out to 5 VMs, 8 VMs will be created and the first 5 that are successfully provisioned will be kept, and the remaining 3 will be deleted.  Overprovisioning is designed to help scale out success rates.
+ The guide below will address reconciling this list via both deployment target triggers along with schedule triggers.
 
-Because of the bootstrap script, it is common to see all 8 VMs registed in Octopus Deploy.  This is normal (and expected) behavior.  The guide below will address reconciling this list via both deployment target triggers along with schedule triggers.
-
-:::hint
-Overprovisioning is turned on by default when you create a Virtual Machine Scale Set.
-:::
