@@ -17,6 +17,7 @@ For example scripts, please see our [Infrastructure as Code Sample GitHub Repo](
 :::hint
 Unlike static servers, which are treated more like pets where you handcraft and maintain them, servers created via auto-scaling should be treated as cattle.  At any given point a server might go down and you'll need to replace it.  Assume whatever could go wrong can go wrong.  For the bootstrap script assume:
 
-1. It will be run multiple times (perhaps after each restart)
-2. Something might have happened to the registration in Octopus Deploy (delete the wrong record), so force the registration
+1. It will be run multiple times (perhaps after each restart).
+2. You can't assume the machine registration will be in Octopus Deploy, so force the registration.
+3. Use the hostname to uniquely identify the machine in Octopus to avoid duplication.
 :::

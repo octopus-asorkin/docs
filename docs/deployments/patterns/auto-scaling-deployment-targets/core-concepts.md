@@ -9,7 +9,7 @@ The auto-scaling offerings from cloud providers introduce a lot of new terminolo
 
 # Scale Out Event
 
-A scale out event is when virtual machines are added to an auto-scaling group.  A scale out event can be triggered automatically via a configured rule, or manually by a person.  When a scale out event occurs, the new virtual machines will need to be added to Octopus Deploy.
+A scale out event is when virtual machines are added to an auto-scaling group.  It can be triggered automatically via a configured rule, or manually by a person.  When a scale out event occurs, the new virtual machines will need to be added to Octopus Deploy.
 
 Link to registering virtual machines with Octopus Deploy.
 
