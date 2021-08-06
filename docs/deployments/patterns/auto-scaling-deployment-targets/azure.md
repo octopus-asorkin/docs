@@ -75,7 +75,7 @@ But if you have multiple VMSS in an environment, one per region then you would h
 
 # Scaling Out
 
-Our recommendation is to use [deployment target triggers](/docs/projects/project-triggers/deployment-target-triggers.md).  They will fire anytime a new deployment target is found.  In our testing, we have found it is normal to see a trigger do a deployment back to back.  
+Our recommendation is to use [deployment target triggers](/docs/projects/project-triggers/deployment-target-triggers.md).  In our testing with VMSS, we have found it is normal to see a trigger do a deployment back to back.  
 
 - The number of instances in a VMSS is increased from 1 to 10.
 - Octopus Deploy sees 4 of the 9 new VMs have come online and trigger a deployment.
@@ -83,25 +83,35 @@ Our recommendation is to use [deployment target triggers](/docs/projects/project
 
 ![Deployment target triggers with auto scaling groups](images/auto-scaling-with-deployment-target-triggers.png)
 
-If your deployments are quick (less than five minutes), that behavior might not be much of a concern.  However, some of our customers' deployment will also ensure all the necessary software (IIS, Java, .NET, NGINX, etc.) is installed and configured properly.  That above behavior can mean a scale out event that would take 10-30 minutes to finish will take 20-60 minutes.  
-
-This guide is designed to address that issue by using the new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status).
+Some of our customers' deployment will also ensure all the necessary software (IIS, Java, .NET, NGINX, etc.) is installed and configured properly.  We have seen situations hwere it can take 20-30 minutes finish configuring.  The new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) addresses this scenario.
 
 - When a scale out event occurs, Octopus Deploy will wait until all machines are provisioned then do the deployment.  In most cases Virtual Machines finish provisioning within 60-90 seconds of each other.
 - The deployment will only include new Deployment Targets.  Any pre-existing Deployment Targets will be left alone.
 - Virtual Machine Scale Sets support [overprovisioning](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-design-overview#overprovisioning).  Any overprovisioned and removed machines should be removed and NOT be deployed to.
 
-## Separate Project for VMSS Interaction
+Below are options describing on how to handle scale out events with VMSS, along with pros and cons.
 
-Due to the scattershot nature of how VMs are provisioned, we have found configuring a separate project for managing VMSS and Octopus Deploy interaction offers the best chance of success.  The separate project used to manage VMSS and Octopus interaction will have a lot of responsibility.  It will handle:
+## Option 1: Wait for deployment target triggers to fire for all new machines
 
-- **Deployment Target Triggers**: The project will house all the deployment target triggers.
-- **Wait until all VMs are provisioned**: The new [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will pause the deployment and wait until all new VMs have finished provisioning.
-- **Triggering a deployment for the new deployment targets**: Once the VMSS finishes provisioning, you can use the [Deploy Child Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to redeploy the latest release for the newly added machines.
-- **Handle VMSS Overprovisioning and reconciliation**: The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will automatically remove any over provisioned machines.
-- **Duplicate runs caused by how VMSS provisions VMs**: The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) will detect a duplicate run caused by a trigger and give you the option to cancel it or use a output variable to skip the remaining steps.
+With this option, there is not anything extra to configure.  As new machines come online, Octopus Deploy will pick them up and deploy to them.  
 
-## Configuring the VMSS Orchestration Project
+Pros: Very little to configure, except for deployment target triggers
+Cons: Scaling out takes much longer; instead of 10-30 minutes, it could take 20-60 minutes.
+
+Recommendation: Use this option when scaling less than or equal to 5 VMs at a time.
+
+## Option 2: Wait for VMSS to finish scaling out (same project)
+
+The second option is to add the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) into your existing project.  Once that finishes running, you can run a [health check](/docs/projects/built-in-step-templates/health-check.md) to add the new machines.
+
+Pros: All the new VMs in the VMSS are deployed to at the same time.  
+Cons: You will need to change an existing deployment process.  Preventing existing machines from getting deployed to will require a variable run condition.
+
+Recommendations: Use this option if you plan on scaling out by more than 5 VMs at a time.
+
+### Update Project Configuration
+
+You will want to ensure your project can handle scale out and scale in events.
 
 1. On your Octopus instance click on **{{Project, Add Project}}**.
 2. Enter in a **Project Name** and click **Save**
@@ -118,6 +128,8 @@ These settings will enable you to create a release the deployment target trigger
 
 ### Configure Deployment Target Triggers
 
+Next, configure deployment target triggers to trigger a deployment anytime a new deployment target is found.  
+
 1. From the project overview screen go to **{{Deployments, Triggers}}**.
 2. In the top right cornger click on **{{Add Trigger, Deployment target trigger}}**.
 3. Configure the following settings:
@@ -129,7 +141,61 @@ These settings will enable you to create a release the deployment target trigger
 
 ![Orchestration Project Deployment Target Trigger](images/orchestration-project-deployment-target-trigger.png)
 
-This trigger will fire anytime a new VM is added to the VMSS due to a scale out event.
+### Configure Variables
+
+The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) has some parameters without defaults.  It will also set a couple of output variables.
+
+Please add the following variables to your project.
+
+- Project.Azure.Account: Variable for the Azure Account used to invoke the Azure PowerShell commands
+- Project.CanContinue.Value: `#{unless Octopus.Deployment.Error}#{Octopus.Action[Check VMSS Provision Status].Output.VMSSHasServersToDeployTo}#{/unless}` (The output variable indicating there are new deployment targets to deploy to)
+- Project.Machine.Ids: `#{Octopus.Action[Check VMSS Provision Status].Output.VMSSDeploymentTargetIds}` (The output variable containing all the deployment targets to deploy to)
+- Project.Octopus.Api.Key: API Key of a service account that has Environment Manager, Project Viewer, and Deployment Creator roles assigned to it.
+- Project.Octopus.Roles: The list of roles, for example `azure-todo-web-server,windows-web-server,vmss-scale-set-todo-web` that uniquely identifies a set of deployment targets in Octopus assigned to the VMSS (the more roles the lower the chance of a false positive).
+- Project.Octopus.Server.Url: `#{Server.Base.Uri}`
+- Project.VMSS.ResourceGroup.Name: The name of the resource group the VMSS is assigned to.
+- Project.VMSS.ScaleSetName: The name of the Virtual Machine Scale Set.
+
+![Orchestration Project Variables](images/release-orchestration-variables.png)
+
+## Option 3: Wait for VMSS to finish scaling out (separate project)
+
+The final option is use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in a separate project.  Once the VMSS finishes scaling out the step template will reconcile the list and then you can use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to trigger a deployment.    
+
+Pros: Isolate the logic for VMSS / Octopus Interaction; leaves your existing deployment process alone.  Makes it easy to wait and handles pre-existing targets much easier than Option 2.
+Cons: Another project to manage and configure.  Doesn't scale well when you have 400+ projects who need VMSS support.
+
+Recommendation: Use this option when you plan on scaling out by more than 5 VMs at time and have multiple environments but only one has a VMSS and you wish to keep your deployment process clean.
+
+### Configuring the VMSS Orchestration Project
+
+You will want to ensure your orchestration project can handle scale out and scale in events.
+
+1. On your Octopus instance click on **{{Project, Add Project}}**.
+2. Enter in a **Project Name** and click **Save**
+3. From the project overview screen go to **{{Deployments, Settings}}**.
+4. Configure the following settings:
+    - Deployment Targets Required: Change to `Allow deployments to be created when there are no deployment targets`.
+    - Transient Deployment Targets - Unavailable Deployment Targets: Change to `Skip and Continue`.  Add the role assigned to VMs in the virtual machine scale set.
+    - Transient Deployment Targets - Unhealthy Deployment Targets: Change to `Exclude`.
+5. Click **SAVE** to save the changes.
+
+![Orchestration Project Deployment Settings](images/orchestration-project-deployment-settings.png)
+
+These settings will enable you to create a release the deployment target triggers to use to on a scale out event.
+
+Next, configure deployment target triggers to trigger a deployment anytime a new deployment target is found.  
+
+1. From the project overview screen go to **{{Deployments, Triggers}}**.
+2. In the top right cornger click on **{{Add Trigger, Deployment target trigger}}**.
+3. Configure the following settings:
+    - Name: Provide a name for the trigger.
+    - Event Categories: select `Machine Created`.
+    - Environments: enter the environments the VMSS exists in.
+    - Target roles: select the target role of the VMs in the VMSS.
+4. Click **SAVE** to save the new trigger.
+
+![Orchestration Project Deployment Target Trigger](images/orchestration-project-deployment-target-trigger.png)
 
 ### Configure Variables
 
@@ -180,6 +246,10 @@ The final step is only there so the deployment target trigger picks up the new v
 - Run Condition: Variable set to `#{Octopus.Account.Id == "1"}` (this step will never run, we only need it to glue the trigger to the VMSS)
 
 ![Orchestration Project Dummy Script](images/orchestration-project-dummy-script.png)
+
+### Create Release
+
+That should be it.  Create a new release and deploy it to your first environment you want to monitor.  The deployment target trigger should pick up and new VMs added and will run this process.   
 
 # Design Considerations
 Virtual Machine Scale Sets provide the ability to define a series of rules to determine when to scale out.  Some examples of rules include:

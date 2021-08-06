@@ -5,9 +5,17 @@ position: 10
 hideInThisSection: true
 ---
 
-One of the main advantages of migrating to the cloud is the ability to scale up and down infrastructure.  A lot of the platform as a service (PaaS) offerings (Azure Web Apps, AWS Lambda, Azure Containers, etc.) have scalability built-in.  However, not every application can (or should) be migrated to run on PaaS.  For a variety of reasons, applications have to continue to run on virtual machines.  Thankfully, you can still take advantage of scalability provided by migrating to the cloud.  Cloud providers provide the ability to auto-scale Virtual Machines.  Two of the more common auto-scaling offerings are [Azure Virtual Machine Scale Sets](https://azure.microsoft.com/en-us/services/virtual-machine-scale-sets/) (VMSS) and [AWS Auto Scaling Groups](https://aws.amazon.com/autoscaling/) (ASG).  
+This guide will help you configure auto scaling Virtual Machines with Octopus Deploy.
 
-This section will walk you through how to configure Octopus Deploy to best work with Auto Scaling Virtual Machines.
+One of the main advantages of migrating to the cloud is the ability to scale up and down infrastructure.  A lot of the platform as a service (PaaS) offerings (Azure Web Apps, AWS Lambda, Azure Containers, etc.) have scalability built-in.  However, not every application can (or should) be migrated to run on PaaS; they should continue to run on Virtual Mchines.  In addition to PaaS, cloud providers provide the ability to auto-scale Virtual Machines.  Two of the more common auto-scaling offerings are [Azure Virtual Machine Scale Sets](https://azure.microsoft.com/en-us/services/virtual-machine-scale-sets/) (VMSS) and [AWS Auto Scaling Groups](https://aws.amazon.com/autoscaling/) (ASG). 
+
+This guide assumes this is your first time using auto-scaling offerrings.  It includes the following steps.
+
+1. Core Concepts
+2. Design Considerations
+3. Auto Register Virtual Machines with Octopus Deploy
+4. Scaling Out Guides
+5. Scaling In Guides
 
 # Recommendations
 
