@@ -634,6 +634,7 @@ docs/administration/managing-users-and-teams/system-and-space-permissions.md -> 
 docs/administration/managing-users-and-teams/user-roles.md -> docs/security/users-and-teams/user-roles.md
 docs/administration/managing-users-and-teams/external-groups-and-roles.md -> docs/security/users-and-teams/external-groups-and-roles.md
 docs/deploying-applications/deployment-process/configuration-features/index.md -> docs/projects/steps/configuration-features/index.md
+docs/deploying-applications/variables/output-variables.md -> docs/projects/variables/output-variables.md
 docs/managing-releases/blocking-deployments.md -> docs/releases/prevent-release-progression.md
 docs/deployment-applications/configuration-files/index.md -> docs/projects/steps/configuration-features/index.md
 docs/deployment-patterns/clustered-listening-tentacles/index.md -> docs/infrastructure/deployment-targets/windows-targets/clustered-listening-tentacles/index.md
@@ -1008,6 +1009,7 @@ docs/tenants/connecting-projects.md -> docs/tenants/tenant-creation/connecting-p
 docs/tenants/connecting-targets.md -> docs/tenants/index.md
 docs/tenants/guides/multi-tenant-region/assigning-infrastructure-tenant-tags.md -> docs/tenants/guides/multi-tenant-region/assigning-tenants-to-infrastructure.md
 docs/tenants/guides/multi-tenant-saas-application/creating-new-octopus-infrastrucure.md -> docs/tenants/guides/multi-tenant-saas-application/creating-new-octopus-infrastructure.md
+docs/tenants/guides/multi-tenant-saas-application/creating-new-azure-infrastructure.md -> docs/tenants/guides/multi-tenant-saas-application/creating-new-octopus-infrastructure.md
 docs/deployments/patterns/multi-tenant-deployments/troubleshooting-multi-tenant-deployments.md -> docs/tenants/troubleshooting-multi-tenant-deployments.md
 docs/deployments/patterns/multi-tenant-deployments/multi-tenant-deployments-faq.md -> docs/tenants/tenant-deployment-faq.md
 docs/deployments/patterns/multi-tenant-deployments/tenant-tags.md -> docs/tenants/tenant-tags.md
