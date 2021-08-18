@@ -5,12 +5,11 @@ position: 30
 hideInThisSection: true
 ---
 
-This guide is use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in a separate project.  Once the VMSS finishes scaling out the step template will reconcile the list and then you can use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to trigger a deployment.    
+This guide will use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in a separate orchestration project.  Once the VMSS finishes scaling out the step template will reconcile the list and then you can use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to trigger a deployment.    
 
-Pros: Isolate the logic for VMSS / Octopus Interaction; leaves your existing deployment process alone.  Makes it easy to wait and handles pre-existing targets much easier than Option 2.
-Cons: Another project to manage and configure.  Doesn't scale well when you have 400+ projects who need VMSS support.
-
-Recommendation: Use this option when you plan on scaling out by more than 5 VMs at time and have multiple environments but only one has a VMSS and you wish to keep your deployment process clean.
+:::hint
+A separate orchestration project is useful when you don't want to modify any existing deployments OR when the virtual machines host multiple applications and you want to control the sequence of deployments.  
+:::
 
 ### Configuring the VMSS Orchestration Project
 
