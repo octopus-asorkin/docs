@@ -5,22 +5,30 @@ position: 30
 hideInThisSection: true
 ---
 
-This guide will use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) in a separate orchestration project.  Once the VMSS finishes scaling out the step template will reconcile the list and then you can use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to trigger a deployment.    
+This guide will use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status-(deployment-targets)) in a separate orchestration project.  Once the VMSS finishes scaling out the step template will reconcile the list and then you can use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) to trigger a deployment.    
 
 :::hint
 A separate orchestration project is useful when you don't want to modify any existing deployments OR when the virtual machines host multiple applications and you want to control the sequence of deployments.  
 :::
 
-### Configuring the VMSS Orchestration Project
+# Configuring the Orchestration Project
 
-You will want to ensure your orchestration project can handle scale out and scale in events.
+First, create a new project in the desired project group.  Once the project is completed complete the following steps.
+
+1. Configure Project settings
+2. Create a Trigger
+3. Configure Variables
+
+## Project Settings
+
+You will want to ensure your orchestration project can handle scale out events.
 
 1. On your Octopus instance click on **{{Project, Add Project}}**.
 2. Enter in a **Project Name** and click **Save**
 3. From the project overview screen go to **{{Deployments, Settings}}**.
 4. Configure the following settings:
     - Deployment Targets Required: Change to `Allow deployments to be created when there are no deployment targets`.
-    - Transient Deployment Targets - Unavailable Deployment Targets: Change to `Skip and Continue`.  Add the role assigned to VMs in the virtual machine scale set.
+    - Transient Deployment Targets - Unavailable Deployment Targets: Change to `Skip and Continue`.  Add the role assigned to VMs in the auto scaling group.
     - Transient Deployment Targets - Unhealthy Deployment Targets: Change to `Exclude`.
 5. Click **SAVE** to save the changes.
 
@@ -28,22 +36,24 @@ You will want to ensure your orchestration project can handle scale out and scal
 
 These settings will enable you to create a release the deployment target triggers to use to on a scale out event.
 
-Next, configure deployment target triggers to trigger a deployment anytime a new deployment target is found.  
+## Create a Trigger
+
+Next, configure a deployment target trigger to re-run a deployment anytime a new virtual machine registers with Octopsu Deploy.  
 
 1. From the project overview screen go to **{{Deployments, Triggers}}**.
 2. In the top right cornger click on **{{Add Trigger, Deployment target trigger}}**.
 3. Configure the following settings:
     - Name: Provide a name for the trigger.
     - Event Categories: select `Machine Created`.
-    - Environments: enter the environments the VMSS exists in.
-    - Target roles: select the target role of the VMs in the VMSS.
+    - Environments: enter the environments the auto scaling group exists in.
+    - Target roles: select the target role of the VMs in the auto scaling group.
 4. Click **SAVE** to save the new trigger.
 
 ![Orchestration Project Deployment Target Trigger](images/orchestration-project-deployment-target-trigger.png)
 
-### Configure Variables
+## Configure Variables
 
-The [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status) has some parameters without defaults.  It will also set a couple of output variables.
+The new step templates, such as [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status-(deployment-targets)) has some parameters without defaults.  It will also set a couple of output variables.
 
 - Project.Azure.Account: Variable for the Azure Account used to invoke the Azure PowerShell commands
 - Project.CanContinue.Value: `#{unless Octopus.Deployment.Error}#{Octopus.Action[Check VMSS Provision Status].Output.VMSSHasServersToDeployTo}#{/unless}` (The output variable indicating there are new deployment targets to deploy to)
@@ -56,16 +66,18 @@ The [Check VMSS Provsion Status step template](https://library.octopus.com/step-
 
 ![Orchestration Project Variables](images/release-orchestration-variables.png)
 
-### Configure Deployment Process
+# Configure Deployment Process
 
 This is an example deployment process representing an MVP for a VMSS Orchestration project.  It does not include any sort of approvals or notifications.  
 
 The deployment process is:
-1. Check VMSS Provision Status
+1. Check Provision Status
 2. Deploy Child Project
 3. Dummy Script for trigger
 
-The first step will use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status).  Provide values for the following parameters (leave all the others as is):
+## Check Provision Status
+
+The first step will use the [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status-(deployment-targets)).  Provide values for the following parameters (leave all the others as is):
 
 - VMSS Name: `#{Project.VMSS.ScaleSetName}`
 - VMSS Resource Group Name: `#{Project.VMSS.ResourceGroup.Name}`
@@ -74,6 +86,8 @@ The first step will use the [Check VMSS Provsion Status step template](https://l
 - Octopus Url: `#{Project.Octopus.Server.Url}`
 - Octopus API Key: `#{Project.Octopus.Api.Key}`
 
+## Create a deployment
+
 The second step will use the [Deploy Child Octopus Deploy Project step template](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project).  Provide values for the following parameters (leave all the others as is):
 
 - Octopus Base Url: `#{Project.Octopus.Server.Url}`
@@ -81,7 +95,9 @@ The second step will use the [Deploy Child Octopus Deploy Project step template]
 - Child Project Name: The name of the project you wish to deploy
 - Deployment Mode: Redeploy
 - Specific Deployment Target: `#{Project.Machines.Ids}`
+- Wait for Deployment: Yes
 
+## Dummy Script for the trigger
 The final step is only there so the deployment target trigger picks up the new virtual machines added to the VMSS.
 
 - Execution Location: deployment target
@@ -91,6 +107,4 @@ The final step is only there so the deployment target trigger picks up the new v
 
 ![Orchestration Project Dummy Script](images/orchestration-project-dummy-script.png)
 
-### Create Release
-
-That should be it.  Create a new release and deploy it to your first environment you want to monitor.  The deployment target trigger should pick up and new VMs added and will run this process.   
+After the deployment process is created, create a release and deploy it through the various lifecycles. 

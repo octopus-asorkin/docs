@@ -81,7 +81,7 @@ It is not uncommon for a deployment to a brand new virtual machine to take longe
 
 The new step templates we've added cover the popular cloud providers.
 
-- [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status)
+- [Check VMSS Provsion Status step template](https://library.octopus.com/step-templates/e04c5cd8-0982-44b8-9cae-0a4b43676adc/actiontemplate-check-vmss-provision-status-(deployment-targets))
 - [Check ASG Provsion Status step template](TBD)
 
 While they target different technologies, the basically work the same.
@@ -93,8 +93,8 @@ While they target different technologies, the basically work the same.
 
 You can add this step template to an existing project, or create a new orchestration project.
 
-- [Guide for Single Process](TBD)
-- [Guide for Orchestration Process](TBD)
+- [Guide for Single Process](/docs/deployments/patterns/auto-scaling-deployment-targets/scale-out/scale-out-single-project.md)
+- [Guide for Orchestration Project](/docs/deployments/patterns/auto-scaling-deployment-targets/scale-out/scale-out-orchestration-project.md)
 
 :::hint
 We only recommend this option when each scale out event adds more than five virtual machines and each deployment takes more than five minutes.  If you are adding 20 virtual machines each morning and it takes 15 minutes to finish configuring and deploying to each one, this is the option for you.
@@ -108,7 +108,7 @@ The final option is not use triggers and instead create an [Octopus Deploy Runbo
 2. Use the new step templates to wait until the scale out event finishes.
 3. Use the Octopus CLI or the [Deploy Child Octopus Deploy Project](https://library.octopus.com/step-templates/0dac2fe6-91d5-4c05-bdfb-1b97adf1e12e/actiontemplate-deploy-child-octopus-deploy-project) step template to redeploy the latest release to the new virtual machines.
 
-[Guide for Scale Out runbook](TBD)
+[Guide for Scale Out runbook](/docs/deployments/patterns/auto-scaling-deployment-targets/scale-out/scale-out-runbook.md)
 
 This option has the following benefits:
 - No unpredictable trigger behavior, the runbook is the one responsible for triggering a deployment to the new virtual machines.
