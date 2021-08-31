@@ -55,9 +55,7 @@ To use your own version of the Azure CLI or Azure Powershell cmdlets when using 
 
 Octopus Deploy provides a *Run an Azure PowerShell Script* step type, for executing PowerShell in the context of an Azure Subscription. For information about adding a step to the deployment process, see the [add step](/docs/projects/steps/index.md) section.
 
-![](5865912.png "width=170")
 
-![](azure-new-powershell-script-step.png "width=500")
 
 ## Learn more
 

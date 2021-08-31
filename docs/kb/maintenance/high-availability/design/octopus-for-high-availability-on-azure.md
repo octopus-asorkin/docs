@@ -117,7 +117,6 @@ To distribute HTTP load among Octopus Server nodes with a single point of access
 
 Octopus Server provides a health check endpoint for your load balancer to ping: `/api/octopusservernodes/ping`.
 
-![Load balancer](images/load-balance-ping.png "width=500")
 
 Making a standard `HTTP GET` request to this URL on your Octopus Server nodes will return:
 

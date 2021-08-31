@@ -1,7 +1,7 @@
 ---
 title: Maintenance
 description: Lorem IpSum.
-position: 95
+position: 60
 ---
 
 Lorem Ipsum

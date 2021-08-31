@@ -156,7 +156,6 @@ if ([string]::IsNullOrWhiteSpace($dismAppList) -eq $false){
 
 5. Add a project [variable](/docs/projects/variables/index.md) called `Project.Chocolatey.DISM.RequiredFeatures` and include the features you wish to install. For example the following variable will install three Windows features:
 
-![Chocolately DISM variable](images/install-chocolatey-dism-variable.png "width=500")
 
 The features which will be installed are:
 - IIS-WindowsAuthentication

@@ -6,7 +6,6 @@ position: 30
 
 Maintaining the nodes in your Octopus Server High Availability cluster can be done on the **Nodes** tab in the **Configuration** area:
 
-![](images/nodes.png "width=500")
 
 Information regarding each of your nodes is displayed here.  You can see:
 
@@ -21,7 +20,6 @@ Information regarding each of your nodes is displayed here.  You can see:
 
 Octopus Server nodes will check-in at regular intervals.  If an Octopus Server node goes offline a warning will be displayed and the time that it went offline can be determined by looking at the **last seen** field.
 
-![](images/nodes-last-seen.png "width=500")
 
 ## Tasks
 
@@ -46,7 +44,6 @@ To distribute HTTP load among Octopus Server nodes with a single point of access
 
 Octopus Server provides a health check endpoint for your load balancer to ping: `/api/octopusservernodes/ping`
 
-![](images/load-balance-ping.png "width=500")
 
 Making a standard `HTTP GET` request to this URL on your Octopus Server nodes will return:
 

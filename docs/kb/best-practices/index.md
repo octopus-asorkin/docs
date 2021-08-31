@@ -1,7 +1,7 @@
 ---
 title: Best Practices
 description: Some of the best practices you can adopt to set yourself up for success in using Octopus Deploy. 
-position: 30
+position: 10
 ---
 
 This guide will provide a set of best practices/recommendations you can adopt with your Octopus Deploy instance.  Like any best practices guide, it won't cover 100% of all scenarios; adapt and modify them to match your company's requirements.  It is also a living document; this guide will change as new features are added to Octopus Deploy.  

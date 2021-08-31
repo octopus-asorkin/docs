@@ -1,7 +1,7 @@
 ---
 title: Deployment Guides
 description: Lorem Ipsum
-position: 95
+position: 20
 ---
 
 Lorem Ipsum

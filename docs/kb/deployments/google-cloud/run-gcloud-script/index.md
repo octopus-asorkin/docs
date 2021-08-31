@@ -27,9 +27,7 @@ The **Run gcloud in a Script** step was added in Octopus **2021.2**.
 
 Octopus Deploy provides a _Run gcloud in a Script_ step type, for executing script in the context of a Google cloud platform instance. For information about adding a step to the deployment process, see the [add step](/docs/projects/steps/index.md) section.
 
-![](google-cloud-script-step.png "width=170")
 
-![](google-cloud-script-step-body.png "width=500")
 
 ## Learn more
 

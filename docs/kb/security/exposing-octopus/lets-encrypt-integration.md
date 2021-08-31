@@ -10,11 +10,9 @@ Octopus can integrate with [Let's Encrypt](https://g.octopushq.com/LetsEncryptOr
 
 Let's Encrypt integration can be found under **{{Configuration,Let's Encrypt}}**.
 
-![](images/letsencrypt.png "width=500")
 
 To enable, click the `Configure` button.
 
-![](images/letsencryptconfig.png "width=500")
 
 Enter the DNS name that you want to have on the new SSL certificate. Do not enter a prefix such as `http://` or `https://`.
 

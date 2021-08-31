@@ -26,15 +26,12 @@ The Terraform template can come from two sources: directly entered source code o
 
 The first option is to paste the template directly into the step. This is done by selecting the `Source code` option, and clicking the `ADD SOURCE CODE` button.
 
-![Source Code](images/step-aws-sourcecode.png "width=500")
 
 This will present a dialog in which the Terraform template can be pasted, in either JSON or HCL.
 
-![Source Code Dialog](images/step-aws-code-dialog.png "width=500")
 
 Once the `OK` button is clicked, the input variables defined in the template will be shown under the `Variables` section.
 
-![Parameters](images/step-parameters.png "width=500")
 
 Terraform variables are either strings, lists or maps.
 
@@ -54,7 +51,6 @@ You can optional run Terraform from a subdirectory in the package by specifying 
 Given that Terraform templates and variable files are plain text, you may find it convenient to use the GitHub Repository Feed to provide the packages used by Terraform steps. Using GitHub releases means you do not have to manually create and upload a package, and can instead tag a release and download it directly from GitHub.
 :::
 
-![Package](images/step-aws-package.png "width=500")
 
 ### Variable replacements
 
@@ -102,7 +98,6 @@ The `Custom terraform init parameters` option can be optionally set to include a
 
 The `Custom terraform apply parameters` option can be optionally set to include any parameters to pass to the `terraform apply` action.
 
-![Terraform Advanced Options](images/terraform-advanced.png "width=500")
 
 ## Output variables
 

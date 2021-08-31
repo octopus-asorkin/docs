@@ -18,7 +18,6 @@ The following certificate formats are supported in Octopus Deploy:
 
 ## Securely store certificates and private-keys
 
-![](certificate-list.png "width=500")
 
 - [Add certificate](add-certificate.md)
 - [Replacing certificates](replace-certificate.md)
@@ -47,7 +46,6 @@ Certificate-expiry events are _not_ raised for [archived](archiving-and-deleting
 
 Certificates can be imported to Windows Certificate Stores as part of a deployment process using the [Import Certificate Deployment Step](/docs/deployments/certificates/import-certificate-step.md).
 
-![](images/import-certificate-step-select.png "width=500")
 
 ## Use certificates for HTTPS bindings when deploying IIS websites   
 
@@ -55,13 +53,11 @@ When configuring HTTPS bindings for [IIS Websites](/docs/deployments/windows/iis
 - entering the thumbprint directly (this assumes the certificate has already been installed on the machine).
 - selecting a certificate-typed variable (this will automatically install the certificate).
 
-![](images/https-binding-certificate.png "width=500")
 
 ## Create certificate-typed variables
 
 Certificates managed by Octopus can be configured as the [value of variables](/docs/projects/variables/certificate-variables.md), and used from custom deployment scripts.
 
-![](images/certificate-variables-scoped.png "width=500")
 
 Note that certificates can not be selected directly when configuring a deployment step. Selecting a certificate in deployment steps presents a drop-down list of the certificate variables that have been defined in the project.
 

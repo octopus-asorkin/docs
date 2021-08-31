@@ -6,9 +6,7 @@ position: 60
 
 Certificates can be downloaded from the Octopus Portal to your local machine.  The certificate may be exported in any of the [supported file-formats](/docs/deployments/certificates/index.md), or exactly as it was originally uploaded.
 
-![](images/download-certificate-btn.png "width=500")
 
-![](images/download-certificate-dialog.png "width=500")
 
 ## Private-keys
 

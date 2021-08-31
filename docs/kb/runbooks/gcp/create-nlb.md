@@ -42,9 +42,6 @@ We'll use project [variables](/docs/projects/variables/index.md) to authorize th
 
 Create two [sensitive variables](/docs/projects/variables/sensitive-variables.md), one for the service account email, and the other will contain the service account key. This is a JSON payload you obtain when creating the service account in Google Cloud:
 
-![Google Cloud Project variables](images/gcp-auth-project-variables.png
- "width=500")
-
 #### Create authorization function in script module
 
 The instructions at [Creating a script module](/docs/deployments/custom-scripts/script-modules.md#ScriptModules-CreatingaScriptmodule) detail the procedure for creating a script module in Octopus.
@@ -87,9 +84,6 @@ function Set-GCPAuth() {
 This script defines a function named `Set-GCPAuth` which uses the `auth activate-service-account` command that is used in the runbook steps to authorize with Google Cloud.
 
 Add the script module into your runbook process following [these instructions](/docs/deployments/custom-scripts/script-modules.md#ScriptModules-UsingaScriptModuleonaDeployment):
-
-![Google Cloud Project variables](images/gcp-runbook-include-script-module.png
- "width=500")
 
 ## Create the runbook {#create-runbook}
 

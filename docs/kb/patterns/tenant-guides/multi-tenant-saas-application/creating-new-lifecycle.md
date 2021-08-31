@@ -9,12 +9,9 @@ The first step in this guide is to create a new [lifecycle](https://octopus.com/
 
 To create a new Lifecycle, navigate to **{{Library, Lifecycles, ADD LIFECYCLE}}**.
 
-![](images/add-new-lifecycle.png "width=500")
 
 
-Give the **Lifecycle** a name, an optional description, and four phases. The lifecycle should ensure all releases are deployed to Development, Test, *optionally* to Staging, then lastly into Production. 
-
-![](images/creating-lifecycle.png "width=500") 
+Give the **Lifecycle** a name, an optional description, and four phases. The lifecycle should ensure all releases are deployed to Development, Test, *optionally* to Staging, then lastly into Production.  
 
 In the next step, we'll [create the project](/docs/tenants/guides/multi-tenant-saas-application/creating-new-tenants.md) needed for this scenario.
 

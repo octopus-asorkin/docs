@@ -33,7 +33,6 @@ Octopus Deploy installation requirements are:
 
 [High availability](/docs/administration/high-availability/index.md) functionality is included with both Server and Data Center licenses.  
 
-![](/docs/administration/high-availability/images/high-availability.svg "width=500")
 
 High availability works in Octopus Deploy by dropping tasks into a queue.  Periodically, each high availability node will check the queue for work.  The node will pick up any pending tasks until it reaches its task cap or it runs out of pending tasks to pick up.  
 
@@ -93,7 +92,6 @@ A high availability configuration will involve setting up:
 - Load balancer for web traffic
 - 40 GB of File storage (DFS, NAS, SAN, Azure File Storage, AWS FSx, etc.)
 
-![small instance diagram](images/small-instance-diagram.png "width=500")
 
 This will give you the capacity to process 10-30 concurrent tasks.  If you need to scale up quickly, double the compute resources, for example, 4 CPUs / 8 GB of RAM, to get to 20-60 concurrent tasks.  We don't recommend going beyond 4 CPUs / 8 GB of RAM and instead recommend scaling horizontally.  
 
@@ -175,7 +173,6 @@ We don't recommend starting with this unless you plan to onboard dozens of teams
 - 200 GB of file storage.
 - Load balancer to manage traffic to UI-only nodes.
 
-![large scale instance](images/large-instance-diagram.png "width=500")
 
 :::hint
 The configuration above is a baseline.  We recommend monitoring your resources as you add projects, users and do more deployments and runbook runs.  The more data, the more Octopus UI and database have to process.  Experiment with increasing compute resources for the SQL Server and the UI nodes.  If you run into any performance concerns, please [contact support](https://octopus.com/support).

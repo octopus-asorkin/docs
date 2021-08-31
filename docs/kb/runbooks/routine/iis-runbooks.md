@@ -109,7 +109,6 @@ We recommend using [variables](/docs/projects/variables/index.md) where appropri
 
 Optionally, configure any [conditions](/docs/projects/steps/conditions/index.md) for the step, click **Save**, and you have a runbook step to start an IIS Application Pool.
 
-![Runbook IIS maintenance Start App-Pool](images/iis-maintenance-start-app-pool.png "width=500")
 
 ## Stop application pool runbook {#stop-app-pool}
 
@@ -129,7 +128,6 @@ To create a runbook to stop your application pool:
 
 Configure any other settings for the step and click **Save**, and you have a runbook step to stop an IIS Application Pool.
 
-![Runbook IIS maintenance Stop App-Pool](images/iis-maintenance-stop-app-pool.png "width=500")
 
 ## Restart application pool runbook {#restart-app-pool}
 
@@ -143,7 +141,6 @@ To create a runbook to restart your IIS application pool:
 
 Configure any other settings for the step and click **Save**, and you have a runbook step to restart an IIS Application Pool.
 
-![Runbook IIS maintenance Restart App-Pool](images/iis-maintenance-restart-app-pool.png "width=500")
 
 ## Restart website runbook {#restart-website}
 
@@ -157,7 +154,6 @@ To create a runbook to restart your IIS websites:
 
 Configure any other settings for the step and click **Save**, and you have a runbook step to restart an IIS website.
 
-![Runbook IIS maintenance Restart Website](images/iis-maintenance-restart-website.png "width=500")
 
 ## Delete website runbook {#delete-website}
 
@@ -171,7 +167,6 @@ To create a runbook to delete your IIS websites:
 
 Configure any other settings for the step and click **Save**, and you have a runbook step to delete an IIS website.
 
-![Runbook IIS maintenance Delete Website](images/iis-maintenance-delete-website.png "width=500")
 
 ## Optional Approvals
 
