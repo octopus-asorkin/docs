@@ -5,6 +5,8 @@ description: Using the Octopus.Migrator.exe command line tool to export data to 
 
 This command exports configuration data to a directory.
 
+!include <migrator-unsupported-warning>
+
 Usage:
 
 ```text
