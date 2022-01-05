@@ -4,14 +4,18 @@ description: How to troubleshoot problems with Octopus Linux Tentacles.
 position: xx (?)
 ---
 
-As with windows tentacles, all of the 'classic' problems of TCP networking: firewalls, proxies, timeouts, DNS issues, and so-on can affect Octopus Linux Tentacles. This guide will help to track down these issues specific for Linux Tentacles, such as when a previously working machine fails a health-check with errors.
+As with windows tentacles, all of the 'classic' problems of TCP networking: firewalls, proxies, timeouts, DNS issues, and so-on can affect Octopus Linux Tentacles. However due to the nature of Linux distributions, the process for resovling these can vary greately. Check out the list of [supported distributions](docs/infrastructure/deployment-targets/linux#supported-distributions) to see which distros we test agaisnt!
 
-Our guide for [installing Linux Tentacles](/docs/infrastructure/deployment-targets/linux/tentacle) covers how to install and configure new Linux Tentacles and check out our guide for [troubleshooting Windows Tentacles](/docs/infrastructure/deployment-targets/windows-targets/troubleshooting-tentacles.md) if you are using Windows based instances.    
+This guide is designed to help to track down issues specific for Linux Tentacles, such as when a previously working machine fails a health-check with errors or a newly configured Tentacle isn't communicating with Octopus.
 
-This guide assumes you have already configured a Listening or Polling Tentacle service via the command:
+Our guide for [installing Linux Tentacles](/docs/infrastructure/deployment-targets/linux/tentacle) covers how to install and configure new Linux Tentacles.  out our guide for [troubleshooting Windows Tentacles](/docs/infrastructure/deployment-targets/windows-targets/troubleshooting-tentacles.md) if you are using Windows based instances.    
+
+This guide assumes you have already installed and configured a Listening or Polling Tentacle service via the command:
 ```
 /opt/octopus/tentacle/configure-tentacle.sh
 ```
+
+
 
 ### Restart the Tentacle service
 
