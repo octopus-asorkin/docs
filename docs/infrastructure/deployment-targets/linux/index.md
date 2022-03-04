@@ -33,8 +33,8 @@ Any Linux server which meets these minimum requirements will be able to be confi
 
 The following platforms are explicitly supported (we run automated tests against them):
 
+- Ubuntu 20.04 LTS
 - Ubuntu 18.04 LTS
-- Ubuntu 16.04 LTS
 - Redhat (RHEL) 7.2
 - Centos 7.7
 - Amazon Linux 2
