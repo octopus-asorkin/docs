@@ -31,19 +31,18 @@ Any Linux server which meets these minimum requirements will be able to be confi
 
 ## Supported distributions
 
-The following platforms are explicitly supported (we run automated tests against them):
+We support (and test against) the current and long-term stable (LTS) releases of most popular distros, including:
 
-- Ubuntu 20.04 LTS
-- Ubuntu 18.04 LTS
-- Redhat (RHEL) 7.2
-- Centos 7.7
+- Ubuntu
+- Redhat 
+- Centos
 - Amazon Linux 2
-- Debian 9.12
-- Fedora 23
-- MacOS 10.15.3
-- openSUSE 15.1
-- SUSE LES 12 SP5
-- FreeBSD 11.3
+- Debian
+- Fedora
+- MacOS
+- openSUSE
+- SUSE 
+- FreeBSD 
 
 ## Learn more
 
