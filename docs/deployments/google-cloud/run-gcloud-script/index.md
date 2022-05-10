@@ -7,13 +7,10 @@ hideInThisSectionHeader: true
 
 Octopus Deploy can help you run scripts on targets within Google Cloud Platform.
 
-These scripts typically rely on tools being available when they execute.
-
-It is best that you control the version of these tools - your scripts will rely on a specific version that they are compatible with to function correctly.
-
-The easiest way to achieve this is to use an [execution container](/docs/projects/steps/execution-containers-for-workers/index.md) for your script step.
-
-If this is not an option in your scenario, we recommend that you provision your own tools on your worker.
+:::hint
+Octopus can help you deploy your infrastructure and applications using a wide range of built-in steps, some of which use tools like the gcloud CLI that need to be available on the path of the machine that is executing the step. By default, these tools are not included in an Octopus installation, although some tooling may be included on [Cloud Dynamic Workers](/docs/infrastructure/workers/dynamic-worker-pools.md#available-dynamic-worker-images). It is best that you control the version of these tools - your deployments will likely rely on a specific version that they are compatible with to function correctly. The easiest way to achieve this is to use an [execution container](/docs/projects/steps/execution-containers-for-workers/index.md) for your steps.
+If this is not an option in your scenario, we recommend that you provision your necessary client tools on your own worker.
+:::
 
 When executing a script against GCP, Octopus Deploy will automatically use your provided Google cloud account details to authenticate you to the target instance, or you can choose to use the service account associated with the target instance.
 

@@ -6,6 +6,11 @@ position: 40
 
 Helm Charts are like a package manager for Kubernetes applications, allowing users to reuse and share complex resource configurations.
 
+:::hint
+Octopus can help you deploy your infrastructure and applications using a wide range of built-in steps, some of which use tools like Helm that need to be available on the path of the machine that is executing the step. By default, these tools are not included in an Octopus installation, although some tooling may be included on [Cloud Dynamic Workers](/docs/infrastructure/workers/dynamic-worker-pools.md#available-dynamic-worker-images). It is best that you control the version of these tools - your deployments will likely rely on a specific version that they are compatible with to function correctly. The easiest way to achieve this is to use an [execution container](/docs/projects/steps/execution-containers-for-workers/index.md) for your steps.
+If this is not an option in your scenario, we recommend that you provision your necessary client tools on your own worker.
+:::
+
 ## Helm feed
 A Helm Feed in Octopus refers to a [Helm Chart repository](https://helm.sh/docs/topics/chart_repository/). This repository is effectively just an HTTP server that houses an `index.yaml` which describes the charts available on that server. Octopus uses this index file to determine the available "packages" (Charts) and versions. A chart is a tarball that looks like `alpine-0.1.2.tgz` which for this example Octopus will interpret as having PackageID `alpine` and version `0.1.2`. There are various ways you can host a chart repository, including third-party tools like [ChartMuseum](https://github.com/chartmuseum/chartmuseum), [Artifactory](https://www.jfrog.com/confluence/display/JFROG/Kubernetes+Helm+Chart+Repositories), [Cloudsmith](https://help.cloudsmith.io/docs/helm-chart-repository), or even hosting your own [static web server](https://helm.sh/docs/topics/chart_repository/#hosting-chart-repositories).
 
