@@ -49,7 +49,7 @@ Once you've settled on an edition, the great thing about using AWS RDS is that y
 
 ### Shared storage
 
-To share common files between the Octopus Server nodes, we need to use [Amazon EFS](https://aws.amazon.com/efs/?c=s&sec=srv). EFS allows a fleet of ECS tasks and services to read and write from a EFS file system.
+To share common files between the Octopus Server nodes, we need to use [Amazon EFS](https://aws.amazon.com/efs/?c=s&sec=srv). EFS allows a fleet of ECS tasks and services to read and write from a EFS file system at the same time.
 
 ### Load balancer {#load-balancer}
 
@@ -72,7 +72,7 @@ However, [Polling Tentacles](/docs/infrastructure/deployment-targets/windows-tar
 Before starting, it's assumed you have already created a VPC and subnets that allow inbound access on port 80/443 and 10933, Database and EFS file system. This guides also assumed this in a new installtion of Octopus deploy but if you are migrating from running Windows on to AWS ECS we have a migration guide you can check out [here](/docs/administration/high-availability/migrate/index.md).  
 
 :::hint
-The examples and guide are using AWS Fargate but running on EC2 is also supported.
+The examples and guide are using AWS Fargate but running Octopus in ECS on EC2 is also supported.
 :::
 
 ### Load balancer configuration 
@@ -118,6 +118,8 @@ LoadBalancers:
 
 The YAML below is an example target group ready to distribute traffic to ECS service tasks in an ECS cluster via HTTP from our loadbalancer;
 
+
+
 ```yaml
 
 TargetGroups:
@@ -148,12 +150,241 @@ TargetGroups:
 ### Cluster Configuration
 
 
+```yaml
+
+clusters:
+- activeServicesCount: 1
+  capacityProviders:
+  - FARGATE
+  - FARGATE_SPOT
+  clusterArn: arn:aws:ecs:eu-west-2:381713788115:cluster/solutions-default-ecs-cluster
+  clusterName: solutions-default-ecs-cluster
+  defaultCapacityProviderStrategy: []
+  pendingTasksCount: 0
+  registeredContainerInstancesCount: 0
+  runningTasksCount: 2
+  settings: []
+  statistics: []
+  status: ACTIVE
+  tags: []
+failures: []
+
+```
+
+
+
+
 ### Task Defintion Configuration
+
+```yaml
+
+---
+ipcMode:
+executionRoleArn: arn:aws:iam::381713788115:role/ecsTaskExecutionRole
+containerDefinitions:
+- dnsSearchDomains:
+  environmentFiles:
+  logConfiguration:
+    logDriver: awslogs
+    secretOptions:
+    options:
+      awslogs-group: "/ecs/octopus-deploy-server"
+      awslogs-region: eu-west-2
+      awslogs-stream-prefix: ecs
+  entryPoint:
+  portMappings:
+  - hostPort: 80
+    protocol: tcp
+    containerPort: 80
+  - hostPort: 10933
+    protocol: tcp
+    containerPort: 10933
+  command:
+  linuxParameters:
+  cpu: 0
+  environment:
+  - name: ACCEPT_EULA
+    value: Y
+  - name: ADMIN_EMAIL
+    value: adam.close@octopus.com
+  - name: ADMIN_PASSWORD
+    value: MyPassw0rd1!
+  - name: ADMIN_USERNAME
+    value: OctoAdmin
+  - name: DB_CONNECTION_STRING
+    value: Server=solutions-default-rds-sql.caj2bomv8w0z.eu-west-2.rds.amazonaws.com,1433;Database=Octopus;User=Octopus;Password=1QBSv2C5dp9B
+  - name: MASTER_KEY
+    value: SVylngjyupJG0lZwUMEBHA==
+  resourceRequirements:
+  ulimits:
+  dnsServers:
+  mountPoints:
+  - readOnly:
+    containerPath: "/repository"
+    sourceVolume: octopus-efs-mount
+  - readOnly:
+    containerPath: "/artifacts"
+    sourceVolume: octopus-efs-mount
+  - readOnly:
+    containerPath: "/taskLogs"
+    sourceVolume: octopus-efs-mount
+  - readOnly:
+    containerPath: "/cache"
+    sourceVolume: octopus-efs-mount
+  - readOnly:
+    containerPath: "/import"
+    sourceVolume: octopus-efs-mount
+  workingDirectory:
+  secrets:
+  dockerSecurityOptions:
+  memory:
+  memoryReservation:
+  volumesFrom: []
+  stopTimeout:
+  image: octopusdeploy/octopusdeploy
+  startTimeout:
+  firelensConfiguration:
+  dependsOn:
+  disableNetworking:
+  interactive:
+  healthCheck:
+  essential: true
+  links:
+  hostname:
+  extraHosts:
+  pseudoTerminal:
+  user:
+  readonlyRootFilesystem: false
+  dockerLabels:
+  systemControls:
+  privileged:
+  name: octopus-deploy-server
+placementConstraints: []
+memory: '1024'
+taskRoleArn: arn:aws:iam::381713788115:role/ecsTaskExecutionRole
+compatibilities:
+- EC2
+- FARGATE
+taskDefinitionArn: arn:aws:ecs:eu-west-2:381713788115:task-definition/octopus-deploy-server:4
+family: octopus-deploy-server
+requiresAttributes:
+- targetId:
+  targetType:
+  value:
+  name: com.amazonaws.ecs.capability.logging-driver.awslogs
+- targetId:
+  targetType:
+  value:
+  name: ecs.capability.execution-role-awslogs
+- targetId:
+  targetType:
+  value:
+  name: ecs.capability.efsAuth
+- targetId:
+  targetType:
+  value:
+  name: com.amazonaws.ecs.capability.docker-remote-api.1.19
+- targetId:
+  targetType:
+  value:
+  name: ecs.capability.efs
+- targetId:
+  targetType:
+  value:
+  name: com.amazonaws.ecs.capability.task-iam-role
+- targetId:
+  targetType:
+  value:
+  name: com.amazonaws.ecs.capability.docker-remote-api.1.25
+- targetId:
+  targetType:
+  value:
+  name: com.amazonaws.ecs.capability.docker-remote-api.1.18
+- targetId:
+  targetType:
+  value:
+  name: ecs.capability.task-eni
+pidMode:
+requiresCompatibilities:
+- FARGATE
+networkMode: awsvpc
+runtimePlatform:
+  operatingSystemFamily: LINUX
+  cpuArchitecture:
+cpu: '512'
+revision: 4
+status: ACTIVE
+inferenceAccelerators:
+proxyConfiguration:
+volumes:
+- fsxWindowsFileServerVolumeConfiguration:
+  efsVolumeConfiguration:
+    transitEncryptionPort:
+    fileSystemId: fs-075b29a2a107ed8f1
+    authorizationConfig:
+      iam: DISABLED
+      accessPointId:
+    transitEncryption: DISABLED
+    rootDirectory: "/"
+  name: octopus-efs-mount
+  host:
+  dockerVolumeConfiguration:
+
+```
 
 
 ### Cluster Service Configuration 
 
+```yaml
+
+services:
+- clusterArn: arn:aws:ecs:eu-west-2:381713788115:cluster/solutions-default-ecs-cluster
+  createdAt: '2022-05-11T04:57:25.365000+01:00'
+  createdBy: arn:aws:iam::381713788115:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_DeveloperAccess_645f9848983dec35
+  deploymentConfiguration:
+    deploymentCircuitBreaker:
+      enable: false
+      rollback: false
+    maximumPercent: 200
+    minimumHealthyPercent: 100
+  deployments:
+  - createdAt: '2022-05-11T05:39:30.317000+01:00'
+    desiredCount: 2
+    failedTasks: 20
+    id: ecs-svc/2182780950350705823
+    launchType: FARGATE
+    networkConfiguration:
+      awsvpcConfiguration:
+        assignPublicIp: ENABLED
+        securityGroups:
+        - sg-0412e4dbe923b7435
+        subnets:
+        - subnet-0bfedc22f4dbb714f
+        - subnet-052a7f6b013fbf77d
+        - subnet-04f96d0ec0213d656
+    pendingCount: 0
+    platformFamily: Linux
+    platformVersion: 1.4.0
+    rolloutState: IN_PROGRESS
+    rolloutStateReason: ECS deployment ecs-svc/2182780950350705823 in progress.
+    runningCount: 2
+    status: PRIMARY
+    taskDefinition: arn:aws:ecs:eu-west-2:381713788115:task-definition/octopus-deploy-server:4
+    updatedAt: '2022-05-11T05:39:30.317000+01:00'
+  desiredCount: 2
+  enableECSManagedTags: true
+  enableExecuteCommand: false
+
+```
+
 ### Upgrading Octopus in ECS
+
+Starting the ECS service for the first time works exactly as Octopus requires; one task at a time is successfully started before the next. This gives the first task a chance to update the SQL schema with any required changes, and all other task start-up and share the already configured database.
+
+If the task definiation is updated with an new docker imagine, and the service tasks are redeployed by default the [rolling update strategy]https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html) is used. A rolling update deletes and recreates each task, which means that during the update there will be a mix of old and new versions of Octopus. This won’t work, as the new version may apply schema updates that the old version can not use, leading to unpredictable results at best, and could result in corrupted data.
+
+
+
 
 
 
