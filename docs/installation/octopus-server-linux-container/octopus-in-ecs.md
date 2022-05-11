@@ -69,11 +69,7 @@ However, [Polling Tentacles](/docs/infrastructure/deployment-targets/windows-tar
 
 ## Configuring Octopus in ECS
 
-Before starting, it's assumed you have already created an ECS cluster (including networking resources such as VPC's and subnets),Database and EFS file system. This guides also assumed this in a new installtion of Octopus deploy but if you are migrating from running Windows on to AWS ECS we have a migration guide you can check out [here](/docs/administration/high-availability/migrate/index.md).
-
-:::hint
-The examples and guide are using AWS Fargate but running on EC2 is also supported.
-:::
+Before starting, it's assumed you have already created a VPC and subnets that allow inbound access on port 80/443 and 10933, Database and EFS file system. This guides also assumed this in a new installtion of Octopus deploy but if you are migrating from running Windows on to AWS ECS we have a migration guide you can check out [here](/docs/administration/high-availability/migrate/index.md).  
 
 :::hint
 The examples and guide are using AWS Fargate but running on EC2 is also supported.
@@ -81,7 +77,85 @@ The examples and guide are using AWS Fargate but running on EC2 is also supporte
 
 ### Load balancer configuration 
 
-In this part of the guide it's assumed your Octopus instance isn't using any polling tentacles. 
+In this part of the guide it's assumed your Octopus instance isn't using any polling tentacles. Given we are creating a HA conifguration of Octopus deploy there will be multiple task replicas in our ECS service running Octopus Deploy. We need to be able to distribute HTTP/HTTPS traffic to all our tasks and ensure if tasks fail or new tasks are started the loadbalancer picks these up. 
+
+We first need to create an application loadbalancer that listens for traffic on HTTP/HTTPs and assosiate a target group that distributes the same traffic to IP address's in the same VPC as the ECS cluster hosting Octopus. For more information on managing loadblancing with ECS tasks you can find it [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html)
+
+The YAML below is an example loadblancer ready to listen to traffic on HTTP to forward to our target group;
+
+:::hint
+As this is an example I've used HTTP but configuring SSL with Octopus in ECS is easy and can be conifigured in the same but using HTTPS. If you can find out more on how to do this [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html)
+:::
+
+```yaml
+
+LoadBalancers:
+- AvailabilityZones:
+  - LoadBalancerAddresses: []
+    SubnetId: subnet-04f96d0ec0213d656
+    ZoneName: eu-west-2a
+  - LoadBalancerAddresses: []
+    SubnetId: subnet-052a7f6b013fbf77d
+    ZoneName: eu-west-2c
+  - LoadBalancerAddresses: []
+    SubnetId: subnet-0bfedc22f4dbb714f
+    ZoneName: eu-west-2b
+  CanonicalHostedZoneId: ZHURV8PSTC4K8
+  CreatedTime: '2022-05-11T02:39:02.200000+00:00'
+  DNSName: solutions-default-ecs-alb-1519316669.eu-west-2.elb.amazonaws.com
+  IpAddressType: ipv4
+  LoadBalancerArn: arn:aws:elasticloadbalancing:eu-west-2:381713788115:loadbalancer/app/solutions-default-ecs-alb/9bc47c40495208f0
+  LoadBalancerName: solutions-default-ecs-alb
+  Scheme: internet-facing
+  SecurityGroups:
+  - sg-0412e4dbe923b7435
+  State:
+    Code: active
+  Type: application
+  VpcId: vpc-044610533a0ea44f4
+
+```
+
+The YAML below is an example target group ready to distribute traffic to ECS service tasks in an ECS cluster via HTTP from our loadbalancer;
+
+```yaml
+
+TargetGroups:
+- HealthCheckEnabled: true
+  HealthCheckIntervalSeconds: 30
+  HealthCheckPath: /
+  HealthCheckPort: traffic-port
+  HealthCheckProtocol: HTTP
+  HealthCheckTimeoutSeconds: 5
+  HealthyThresholdCount: 5
+  IpAddressType: ipv4
+  LoadBalancerArns:
+  - arn:aws:elasticloadbalancing:eu-west-2:381713788115:loadbalancer/app/solutions-default-ecs-alb/9bc47c40495208f0
+  Matcher:
+    HttpCode: '200'
+  Port: 80
+  Protocol: HTTP
+  ProtocolVersion: HTTP1
+  TargetGroupArn: arn:aws:elasticloadbalancing:eu-west-2:381713788115:targetgroup/solutions-default-ecs-web-tg/df21872e51294908
+  TargetGroupName: solutions-default-ecs-web-tg
+  TargetType: ip
+  UnhealthyThresholdCount: 2
+  VpcId: vpc-044610533a0ea44f4
+
+```
+
+
+### Cluster Configuration
+
+
+### Task Defintion Configuration
+
+
+### Cluster Service Configuration 
+
+### Upgrading Octopus in ECS
+
+
 
 
 
