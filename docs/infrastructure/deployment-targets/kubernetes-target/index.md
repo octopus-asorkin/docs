@@ -7,6 +7,12 @@ Kubernetes targets are used by the [Kubernetes steps](/docs/deployments/kubernet
 
 Conceptually, a Kubernetes target represent a permission boundary and an endpoint. Kubernetes [permissions](https://oc.to/KubernetesRBAC) and [quotas](https://oc.to/KubernetesQuotas) are defined against a namespace, and both the account and namespace are captured as a Kubernetes target, along with the cluster endpoint URL.
 
+:::hint
+Octopus uses the Kubernetes CLI tool kubectl to work with Kubernetes targets. By default, these tools are not included in an Octopus installation, except on some [Cloud Dynamic Workers](/docs/infrastructure/workers/dynamic-worker-pools.md#available-dynamic-worker-images). Your target may rely on a specific version to function correctly.
+
+The easiest way to control the version of your tools is to use an [execution container](/docs/projects/steps/execution-containers-for-workers/index.md) for your steps. If this is not an option in your scenario, we recommend that you provision your necessary client tools on your own worker.
+:::
+
 ## A sample config file
 
 The YAML file below shows a sample **kubectl** configuration file. Existing Kubernetes users will likely have a similar configuration file.
