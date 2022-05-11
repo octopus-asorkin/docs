@@ -381,8 +381,7 @@ services:
 
 Starting the ECS service for the first time works exactly as Octopus requires; one task at a time is successfully started before the next. This gives the first task a chance to update the SQL schema with any required changes, and all other task start-up and share the already configured database.
 
-If the task definiation is updated with an new docker imagine, and the service tasks are redeployed by default the [rolling update strategy]https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html) is used. A rolling update deletes and recreates each task, which means that during the update there will be a mix of old and new versions of Octopus. This won’t work, as the new version may apply schema updates that the old version can not use, leading to unpredictable results at best, and could result in corrupted data.
-
+If the task definiation is updated with an new docker imagine, and the service tasks are redeployed, by default the [rolling update strategy]https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html) is used. A rolling update creates new task, deltes the old one, updates the loadblancer target group with the new task and repeats for each task. This means that during the update there will be a mix of old and new versions of Octopus. This  will cause problems, when the first new task starts it will upgrade the database schema meaning old octopus instances that havn't been upgraded yet will be using the wrong database schema and this could lead to unpredactible results for anyone using Octopus.
 
 
 
