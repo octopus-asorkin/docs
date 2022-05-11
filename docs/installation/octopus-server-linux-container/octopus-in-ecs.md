@@ -102,9 +102,9 @@ LoadBalancers:
     ZoneName: eu-west-2b
   CanonicalHostedZoneId: ZHURV8PSTC4K8
   CreatedTime: '2022-05-11T02:39:02.200000+00:00'
-  DNSName: solutions-default-ecs-alb-1519316669.eu-west-2.elb.amazonaws.com
+  DNSName: solutions-default-ecs-alb.eu-west-2.elb.amazonaws.com
   IpAddressType: ipv4
-  LoadBalancerArn: arn:aws:elasticloadbalancing:eu-west-2:381713788115:loadbalancer/app/solutions-default-ecs-alb/9bc47c40495208f0
+  LoadBalancerArn: arn:aws:elasticloadbalancing:eu-west-2:loadbalancer/app/solutions-default-ecs-alb/9bc47c40495208f0
   LoadBalancerName: solutions-default-ecs-alb
   Scheme: internet-facing
   SecurityGroups:
@@ -132,13 +132,13 @@ TargetGroups:
   HealthyThresholdCount: 5
   IpAddressType: ipv4
   LoadBalancerArns:
-  - arn:aws:elasticloadbalancing:eu-west-2:381713788115:loadbalancer/app/solutions-default-ecs-alb/9bc47c40495208f0
+  - arn:aws:elasticloadbalancing:eu-west-2:loadbalancer/app/solutions-default-ecs-alb/
   Matcher:
     HttpCode: '200'
   Port: 80
   Protocol: HTTP
   ProtocolVersion: HTTP1
-  TargetGroupArn: arn:aws:elasticloadbalancing:eu-west-2:381713788115:targetgroup/solutions-default-ecs-web-tg/df21872e51294908
+  TargetGroupArn: arn:aws:elasticloadbalancing:eu-west-2targetgroup/solutions-default-ecs-web-tg
   TargetGroupName: solutions-default-ecs-web-tg
   TargetType: ip
   UnhealthyThresholdCount: 2
@@ -157,7 +157,7 @@ clusters:
   capacityProviders:
   - FARGATE
   - FARGATE_SPOT
-  clusterArn: arn:aws:ecs:eu-west-2:381713788115:cluster/solutions-default-ecs-cluster
+  clusterArn: arn:aws:ecs:eu-west-2:cluster/solutions-default-ecs-cluster
   clusterName: solutions-default-ecs-cluster
   defaultCapacityProviderStrategy: []
   pendingTasksCount: 0
@@ -180,7 +180,7 @@ failures: []
 
 ---
 ipcMode:
-executionRoleArn: arn:aws:iam::381713788115:role/ecsTaskExecutionRole
+executionRoleArn: arn:aws:iam:5:role/ecsTaskExecutionRole
 containerDefinitions:
 - dnsSearchDomains:
   environmentFiles:
@@ -208,13 +208,13 @@ containerDefinitions:
   - name: ADMIN_EMAIL
     value: adam.close@octopus.com
   - name: ADMIN_PASSWORD
-    value: MyPassw0rd1!
+    value: your_octopus_admin_password_here
   - name: ADMIN_USERNAME
     value: OctoAdmin
   - name: DB_CONNECTION_STRING
-    value: Server=solutions-default-rds-sql.caj2bomv8w0z.eu-west-2.rds.amazonaws.com,1433;Database=Octopus;User=Octopus;Password=1QBSv2C5dp9B
+    value: Server=database_host.eu-west-2.rds.amazonaws.com,1433;Database=Octopus;User=Octopus;Password=your_database_password_here
   - name: MASTER_KEY
-    value: SVylngjyupJG0lZwUMEBHA==
+    value: your_octopus_master_key_here
   resourceRequirements:
   ulimits:
   dnsServers:
@@ -261,11 +261,11 @@ containerDefinitions:
   name: octopus-deploy-server
 placementConstraints: []
 memory: '1024'
-taskRoleArn: arn:aws:iam::381713788115:role/ecsTaskExecutionRole
+taskRoleArn: arn:aws:iam:role/ecsTaskExecutionRole
 compatibilities:
 - EC2
 - FARGATE
-taskDefinitionArn: arn:aws:ecs:eu-west-2:381713788115:task-definition/octopus-deploy-server:4
+taskDefinitionArn: arn:aws:ecs:task-definition/octopus-deploy-server:4
 family: octopus-deploy-server
 requiresAttributes:
 - targetId:
@@ -320,7 +320,7 @@ volumes:
 - fsxWindowsFileServerVolumeConfiguration:
   efsVolumeConfiguration:
     transitEncryptionPort:
-    fileSystemId: fs-075b29a2a107ed8f1
+    fileSystemId: fs-075
     authorizationConfig:
       iam: DISABLED
       accessPointId:
@@ -338,9 +338,9 @@ volumes:
 ```yaml
 
 services:
-- clusterArn: arn:aws:ecs:eu-west-2:381713788115:cluster/solutions-default-ecs-cluster
+- clusterArn: cluster/solutions-default-ecs-cluster
   createdAt: '2022-05-11T04:57:25.365000+01:00'
-  createdBy: arn:aws:iam::381713788115:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_DeveloperAccess_645f9848983dec35
+  createdBy: 
   deploymentConfiguration:
     deploymentCircuitBreaker:
       enable: false
@@ -351,7 +351,7 @@ services:
   - createdAt: '2022-05-11T05:39:30.317000+01:00'
     desiredCount: 2
     failedTasks: 20
-    id: ecs-svc/2182780950350705823
+    id: 
     launchType: FARGATE
     networkConfiguration:
       awsvpcConfiguration:
@@ -359,17 +359,17 @@ services:
         securityGroups:
         - sg-0412e4dbe923b7435
         subnets:
-        - subnet-0bfedc22f4dbb714f
-        - subnet-052a7f6b013fbf77d
-        - subnet-04f96d0ec0213d656
+        - subnet-1
+        - subnet-2
+        - subnet-3
     pendingCount: 0
     platformFamily: Linux
     platformVersion: 1.4.0
     rolloutState: IN_PROGRESS
-    rolloutStateReason: ECS deployment ecs-svc/2182780950350705823 in progress.
+    rolloutStateReason: ECS deployment ecs-svc/ 3 in progress.
     runningCount: 2
     status: PRIMARY
-    taskDefinition: arn:aws:ecs:eu-west-2:381713788115:task-definition/octopus-deploy-server:4
+    taskDefinition: task-definition/octopus-deploy-server:4
     updatedAt: '2022-05-11T05:39:30.317000+01:00'
   desiredCount: 2
   enableECSManagedTags: true
