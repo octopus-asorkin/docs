@@ -1,18 +1,18 @@
 ---
 title: Octopus Server in ECS
-description: Octopus can be installed AWS ECS and this document explain how to do this and leverage HA.
+description: Octopus can be hosted in an Amazon ECS cluster running the Octopus Server Linux container, optionally leveraging High Availability (HA).
 position: 41
 ---
 
-One of the driving forces behind creating the Octopus Server Linux Container was so Octopus could run in a container in Kubernetes for [Octopus Cloud](/docs/octopus-cloud/index.md). With the release of the Octopus Server Linux Container image in **2020.6**, this option is available for those who want to host Octopus in their own ECS clusters.
+One of the driving forces behind creating the Octopus Server Linux Container was so Octopus could run in a container in Kubernetes for [Octopus Cloud](/docs/octopus-cloud/index.md). With the release of the Octopus Server Linux Container image in **2020.6**, it's possible to host Octopus in an Amazon ECS cluster.
 
 This page describes how to run Octopus Server in ECS using Fargate.
 
-Since [Octopus High Availability](/docs/administration/high-availability/index.md) (HA) and ECS go hand in hand, this guide will show how to support scaling Octopus Server instances with multiple HA nodes. It assumes a working knowledge of ECS concepts, such as Task definiations, Task Services, AWS Service Integrations.
+Since [Octopus High Availability](/docs/administration/high-availability/index.md) (HA) and ECS go hand in hand, this guide will show how to support scaling Octopus Server instances with multiple HA nodes. It assumes a working knowledge of ECS concepts, such as Task definitions, Task Services, and AWS Service Integrations.
 
 ## Getting started {#getting-started}
 
-Whether you are running Octopus in a Container using Docker or ECS, or running it on Windows Server, there are a number of items to consider when creating an Octopus High Availability cluster:
+However you choose to host your Octopus installation, there are a number of items to consider when creating an Octopus High Availability cluster:
 
 - A Highly available [SQL Server database](/docs/installation/sql-server-database.md)
 - A shared file system for [Artifacts, Packages, and Task Logs](/docs/administration/managing-infrastructure/server-configuration-and-file-storage/index.md#ServerconfigurationandFilestorage-FileStorageFilestorage)
@@ -22,8 +22,8 @@ Whether you are running Octopus in a Container using Docker or ECS, or running i
 
 The following sections describe these in more detail by creating an Octopus High Availability cluster with two Octopus Server nodes being served by a load balancer on port `80`.
 
-:::hint
-The YAML provided in this guide is designed to provide you with a starting point to help you get Octopus Server running in a container in Kubernetes. We recommend taking the time to configure your Octopus instance to meet your own organization's requirements.
+:::warning
+The YAML resources provided in this guide are designed to provide you with a starting point to help you get Octopus Server running in a container in ECS, but it won't cover every scenario. We recommend taking the time to configure your Octopus instance in ECS to meet your own organization's requirements.
 :::
 
 ### SQL Server Database {#sql-database}
@@ -49,42 +49,50 @@ Once you've settled on an edition, the great thing about using AWS RDS is that y
 
 ### Shared storage
 
-To share common files between the Octopus Server nodes, we need to use [Amazon EFS](https://aws.amazon.com/efs/?c=s&sec=srv). EFS allows a fleet of ECS tasks and services to read and write from a EFS file system at the same time.
+To share common files between the Octopus Server nodes, we need to use [Amazon EFS](https://aws.amazon.com/efs/?c=s&sec=srv). EFS allows multiple ECS tasks and services to read and write from a EFS file system concurrently.
 
 ### Load balancer {#load-balancer}
 
-A Load balancer is required to direct traffic to the Octopus Web Portal and optionally a way to access each of the Octopus Server nodes in an Octopus High Availability cluster may be required if you're using [Polling Tentacles](/docs/administration/high-availability/maintain/polling-tentacles-with-ha.md).
+A Load balancer is required to direct traffic to the Octopus Web Portal, and optionally a way to access each of the Octopus Server nodes in an Octopus High Availability cluster may be required if you're using [Polling Tentacles](/docs/administration/high-availability/maintain/polling-tentacles-with-ha.md).
 
-
-To distribute traffic to the Octopus web portal on multiple ECS nodes (Tasks), you need to use a HTTP load balancer. AWS provides a solution to distribute HTTP/HTTPS traffic to EC2 instances, Elastic Load Balancing is a highly available, secure, and elastic load balancer. There are three implementations of ELB;
+To distribute traffic to the Octopus web portal on multiple ECS nodes (Tasks), you need to use a HTTP load balancer. AWS provides a solution called **Elastic Load Balancing (ELB)** to distribute HTTP/HTTPS traffic to EC2 instances. Elastic Load Balancing is a highly available, secure, and elastic load balancer. There are three implementations of ELB:
 
 * [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
 * [Network Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html)
 * [Classic Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html)
 
-If you are *only* using [Listening Tentacles](/docs/infrastructure/deployment-targets/windows-targets/tentacle-communication.md#listening-tentacles-recommended), we recommend using the Application Load Balancer.
+If you are *only* using [Listening Tentacles](/docs/infrastructure/deployment-targets/windows-targets/tentacle-communication.md#listening-tentacles-recommended), we recommend using an **Application Load Balancer**.
 
-However, [Polling Tentacles](/docs/infrastructure/deployment-targets/windows-targets/tentacle-communication.md#polling-tentacles) don't work well with the Application Load Balancer, so instead, we recommend using the Network Load Balancer. To setup a Network Load Balancer for Octopus High Availability with Polling Tentacles it gets a little complicated with ECS and it's discussed further down the documentation.
+However, [Polling Tentacles](/docs/infrastructure/deployment-targets/windows-targets/tentacle-communication.md#polling-tentacles) don't work well with the Application Load Balancer. Instead, we recommend using the Network Load Balancer (NLB). To setup a Network Load Balancer for Octopus High Availability including Polling Tentacles is currently complicated with ECS due to two main issues:
 
+- The way polling tentacles must connect to each node in a HA cluster directly to poll for work and
+- How a new ECS task replica running an Octopus Server node is created and registered with the Octopus HA cluster
+
+This is discussed in more detail below.
 
 ## Configuring Octopus in ECS
 
-Before starting, it's assumed you have already created a VPC and subnets that allow inbound access on port 80/443 and 10933, Database and EFS file system. This guides also assumed this in a new installtion of Octopus deploy but if you are migrating from running Windows on to AWS ECS we have a migration guide you can check out [here](/docs/administration/high-availability/migrate/index.md).  
+Before starting, it's assumed you already have available, or have created the following:
+- A VPC and subnets that allow inbound access on port `80`, `443` and `10943`.
+- A Database for use with Octopus
+- An EFS file system. 
+
+This guide also assumes this in a new installation of Octopus but if you are migrating from running Octopus on Windows Server to AWS ECS we have a [migration guide](/docs/administration/high-availability/migrate/index.md).  
 
 :::hint
-The examples and guide are using AWS Fargate but running Octopus in ECS on EC2 is also supported.
+The examples in this guide are using AWS Fargate but running Octopus in ECS on EC2 is also supported.
 :::
 
 ### Load balancer configuration 
 
-In this part of the guide it's assumed your Octopus instance isn't using any polling tentacles. Given we are creating a HA conifguration of Octopus deploy there will be multiple task replicas in our ECS service running Octopus Deploy. We need to be able to distribute HTTP/HTTPS traffic to all our tasks and ensure if tasks fail or new tasks are started the loadbalancer picks these up. 
+In this part of the guide it's assumed your Octopus instance isn't using any polling tentacles. Given we are creating a HA configuration of Octopus deploy there will be multiple task replicas in our ECS service running Octopus Deploy. We need to be able to distribute HTTP/HTTPS traffic to all our tasks and ensure if tasks fail or new tasks are started the loadbalancer picks these up. 
 
-We first need to create an application loadbalancer that listens for traffic on HTTP/HTTPs and assosiate a target group that distributes the same traffic to IP address's in the same VPC as the ECS cluster hosting Octopus. For more information on managing loadblancing with ECS tasks you can find it [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html)
+We first need to create an application loadbalancer that listens for traffic on HTTP/HTTPs and associate a target group that distributes the same traffic to IP address's in the same VPC as the ECS cluster hosting Octopus. For more information on managing load balancing with ECS tasks you can find it [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-load-balancing.html)
 
-The YAML below is an example loadblancer ready to listen to traffic on HTTP to forward to our target group;
+The YAML below is an example loadblancer ready to listen to traffic on HTTP to forward to our target group:
 
 :::hint
-As this is an example I've used HTTP but configuring SSL with Octopus in ECS is easy and can be conifigured in the same but using HTTPS. If you can find out more on how to do this [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html)
+Although this example uses HTTP, configuring HTTPs with Octopus in ECS is straightforward and can be configured in the same way but using HTTPS. you can find out more on how to do this [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html)
 :::
 
 ```yaml
@@ -118,8 +126,6 @@ LoadBalancers:
 
 The YAML below is an example target group ready to distribute traffic to ECS service tasks in an ECS cluster via HTTP from our loadbalancer;
 
-
-
 ```yaml
 
 TargetGroups:
@@ -146,9 +152,7 @@ TargetGroups:
 
 ```
 
-
 ### Cluster Configuration
-
 
 ```yaml
 
@@ -170,10 +174,6 @@ clusters:
 failures: []
 
 ```
-
-
-
-
 ### Task Defintion Configuration
 
 ```yaml
